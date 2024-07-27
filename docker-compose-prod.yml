@@ -1,0 +1,23 @@
+version: '3.3'
+
+services:
+  db:
+      image: mysql:8.0
+      restart: always
+      ports:
+        - "3307:3306"
+      volumes:
+        - db-volume:/var/lib/mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: 1234
+        MYSQL_DATABASE: appname
+  api: 
+    image: appname-api:latest
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      
+volumes:
+  db-volume:
