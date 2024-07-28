@@ -19,3 +19,5 @@ var testWordForm1 = userword.CreateForm{Term: "bad", Lang: "en",
 	Definitions: []schema.Definition{{Definition: "not good", Example: "drug is bad"}}}
 var testWordForm2 = userword.CreateForm{Term: "good", Lang: "en",
 	Definitions: []schema.Definition{{Definition: "not bad", Example: "vegetables are good"}}}
+
+const UPDATED_TERM = "adverse"

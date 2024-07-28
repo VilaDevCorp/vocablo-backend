@@ -79,8 +79,8 @@ func Search(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
-	id, error := c.Params.Get("id")
-	if error {
+	id, present := c.Params.Get("id")
+	if !present {
 		res := utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer("Mandatory fields not present"), nil)
 		c.AbortWithStatusJSON(res.Status, res.Body)
 		return
