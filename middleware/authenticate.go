@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"appname/customerrors"
-	"appname/utils"
+	"context"
 	"fmt"
 	"net/http"
+	"vocablo/customerrors"
+	"vocablo/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,12 +25,17 @@ func Authentication() gin.HandlerFunc {
 			return
 		}
 		tokenClaims, jwtError := utils.ValidateToken(jwt)
+
 		if jwtError != nil || !utils.CompareHash(csrf, tokenClaims.Csrf) {
 			fmt.Print(jwtError)
 			res := utils.ErrorResponse(http.StatusUnauthorized, utils.GetStringPointer("Invalid or expired JWT"), utils.GetStringPointer(customerrors.INVALID_TOKEN))
 			c.AbortWithStatusJSON(res.Status, res.Body)
 			return
 		}
+		newCtx := c.Request.Context()
+		newCtx = context.WithValue(newCtx, utils.UserIdKey, tokenClaims.Id)
+		c.Request = c.Request.WithContext(newCtx)
+
 		c.Next()
 	}
 }
