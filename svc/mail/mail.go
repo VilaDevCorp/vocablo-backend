@@ -1,8 +1,8 @@
 package mail
 
 import (
-	"appname/conf"
 	"net/smtp"
+	"vocablo/conf"
 )
 
 type MailSvc interface {

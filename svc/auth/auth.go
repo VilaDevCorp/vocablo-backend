@@ -1,12 +1,12 @@
 package auth
 
 import (
-	"appname/customerrors"
-	"appname/ent"
-	"appname/ent/user"
-	"appname/svc/verificationcode"
-	"appname/utils"
 	"context"
+	"vocablo/customerrors"
+	"vocablo/ent"
+	"vocablo/ent/user"
+	"vocablo/svc/verificationcode"
+	"vocablo/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )

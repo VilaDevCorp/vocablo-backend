@@ -1,11 +1,11 @@
 package api
 
 import (
-	"appname/api/auth"
-	"appname/conf"
-	"appname/middleware"
 	"fmt"
 	"net/http"
+	"vocablo/api/auth"
+	"vocablo/conf"
+	"vocablo/middleware"
 
 	ginzerolog "github.com/dn365/gin-zerolog"
 	"github.com/gin-gonic/gin"

@@ -1,18 +1,18 @@
 package verificationcode
 
 import (
-	"appname/conf"
-	"appname/customerrors"
-	"appname/ent"
-	"appname/ent/predicate"
-	"appname/ent/user"
-	"appname/ent/verificationcode"
-	"appname/svc/mail"
-	"appname/utils"
 	"context"
 	"fmt"
 	"math/rand"
 	"time"
+	"vocablo/conf"
+	"vocablo/customerrors"
+	"vocablo/ent"
+	"vocablo/ent/predicate"
+	"vocablo/ent/user"
+	"vocablo/ent/verificationcode"
+	"vocablo/svc/mail"
+	"vocablo/utils"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -66,10 +66,7 @@ func (s *VerificationCodeSvcImpl) Create(ctx context.Context, form CreateForm, t
 		}
 		return err
 	}
-	hostUrl := conf.Get().Dev.FrontUrl
-	if conf.Get().Env == "prod" {
-		hostUrl = conf.Get().Prod.FrontUrl
-	}
+
 	var mailSubject, mailBody string
 	if form.Type == utils.VALIDATION_TYPE {
 		mailSubject = conf.Get().Mail.Texts.ValidateEmail.Subject
@@ -80,8 +77,7 @@ func (s *VerificationCodeSvcImpl) Create(ctx context.Context, form CreateForm, t
 		mailBody = conf.Get().Mail.Texts.ValidateEmail.Body
 
 	}
-	err = s.Mail.SendMail(user.Email, mailSubject, fmt.Sprintf(mailBody,
-		hostUrl, user.Username, verificationCode.Code))
+	err = s.Mail.SendMail(user.Email, mailSubject, fmt.Sprintf(mailBody, verificationCode.Code))
 
 	if err != nil {
 		if !externalTx {

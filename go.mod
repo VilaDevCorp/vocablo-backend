@@ -1,4 +1,4 @@
-module appname
+module vocablo
 
 go 1.22
 

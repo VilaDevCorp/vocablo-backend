@@ -1,11 +1,11 @@
 package db
 
 import (
-	"appname/conf"
-	"appname/ent"
-	"appname/ent/migrate"
 	"context"
 	"fmt"
+	"vocablo/conf"
+	"vocablo/ent"
+	"vocablo/ent/migrate"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"

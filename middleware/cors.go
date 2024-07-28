@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"appname/conf"
 	"net/http"
+	"vocablo/conf"
 
 	"github.com/gin-gonic/gin"
 )

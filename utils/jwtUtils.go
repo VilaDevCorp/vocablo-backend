@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"appname/conf"
 	"errors"
 	"fmt"
 	"time"
+	"vocablo/conf"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"

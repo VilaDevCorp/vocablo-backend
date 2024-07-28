@@ -1,11 +1,11 @@
 package main
 
 import (
-	"appname/api"
-	"appname/conf"
-	"appname/db"
-	"appname/svc"
-	"appname/svc/mail"
+	"vocablo/api"
+	"vocablo/conf"
+	"vocablo/db"
+	"vocablo/svc"
+	"vocablo/svc/mail"
 
 	"github.com/rs/zerolog/log"
 )

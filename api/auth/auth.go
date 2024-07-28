@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"appname/conf"
-	"appname/customerrors"
-	"appname/svc"
-	"appname/svc/auth"
-	"appname/svc/verificationcode"
-	"appname/utils"
 	"net/http"
+	"vocablo/conf"
+	"vocablo/customerrors"
+	"vocablo/svc"
+	"vocablo/svc/auth"
+	"vocablo/svc/verificationcode"
+	"vocablo/utils"
 
 	"github.com/gin-gonic/gin"
 )

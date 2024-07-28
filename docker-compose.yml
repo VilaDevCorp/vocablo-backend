@@ -10,7 +10,7 @@ services:
     volumes:
       - db:/data/db
   # api:
-  #   image: appname-api:latest
+  #   image: vocablo-api:latest
   #   restart: always
   #   ports:
   #     - "8080:8080"

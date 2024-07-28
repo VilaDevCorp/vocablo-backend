@@ -6,14 +6,14 @@ Dev:
   CorsHost: http://192.168.1.129:5173
   FrontUrl: http://192.168.1.129:5173
 Prod:
-  CookieHost: trainwithappname.com
+  CookieHost: trainwithvocablo.com
   CookieSecure: true
   HttpOnly: true
-  CorsHost: https://appname.com
-  FrontUrl: https://appname.com
+  CorsHost: https://vocablo.com
+  FrontUrl: https://vocablo.com
 IP: 0.0.0.0
 Port: 8080
-JwtKey: appName258SECRETkey
+JwtKey: vocablo258SECRETkey
 Mail:
   User: viladevapps@gmail.com
   Pass: iabn dhoj wpyc zzwu
@@ -22,10 +22,10 @@ Mail:
   Texts:
     ValidateEmail:
       Subject: Validation code
-      Body: "You can access to this link to validate your account: %s/validate/%s/%s"
+      Body: "You can use this code to validate your account: %s"
     ResetPassword:
       Subject: Reset password code
-      Body: "You can access to this link to change your password: %s/reset-password/%s/%s"
+      Body: "You can use this code to reset your password: %s"
 DB:
   Port: 5436
   Host: localhost

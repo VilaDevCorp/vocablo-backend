@@ -1,10 +1,10 @@
 package user
 
 import (
-	"appname/svc"
-	"appname/svc/user"
-	"appname/utils"
 	"net/http"
+	"vocablo/svc"
+	"vocablo/svc/user"
+	"vocablo/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -48,24 +48,24 @@ func Get(c *gin.Context) {
 	c.JSON(res.Status, res.Body)
 }
 
-func Search(c *gin.Context) {
-	var form user.SearchForm
-	err := c.ShouldBind(&form)
-	if err != nil {
-		res := utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer(err.Error()), nil)
-		c.AbortWithStatusJSON(res.Status, res.Body)
-		return
-	}
-	svc := svc.Get()
-	result, err := svc.User.Search(c.Request.Context(), form)
-	if err != nil {
-		res := utils.InternalError(err)
-		c.AbortWithStatusJSON(res.Status, res.Body)
-		return
-	}
-	res := utils.SuccessResponse(result)
-	c.JSON(res.Status, res.Body)
-}
+// func Search(c *gin.Context) {
+// 	var form user.SearchForm
+// 	err := c.ShouldBind(&form)
+// 	if err != nil {
+// 		res := utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer(err.Error()), nil)
+// 		c.AbortWithStatusJSON(res.Status, res.Body)
+// 		return
+// 	}
+// 	svc := svc.Get()
+// 	result, err := svc.User.Search(c.Request.Context(), form)
+// 	if err != nil {
+// 		res := utils.InternalError(err)
+// 		c.AbortWithStatusJSON(res.Status, res.Body)
+// 		return
+// 	}
+// 	res := utils.SuccessResponse(result)
+// 	c.JSON(res.Status, res.Body)
+// }
 
 func Delete(c *gin.Context) {
 	unparsedId, _ := c.Params.Get("id")

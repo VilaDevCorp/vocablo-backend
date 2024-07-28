@@ -10,9 +10,9 @@ services:
         - db-volume:/var/lib/mysql
       environment:
         MYSQL_ROOT_PASSWORD: 1234
-        MYSQL_DATABASE: appname
+        MYSQL_DATABASE: vocablo
   api: 
-    image: appname-api:latest
+    image: vocablo-api:latest
     restart: always
     ports:
       - "8080:8080"
