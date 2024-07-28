@@ -50,21 +50,23 @@ func SetupTest(t *testing.T, isValidated bool, customSetup func(client *ent.Clie
 	func(t *testing.T), context.Context) {
 	ctx := context.Background()
 	client, teardown := StartTest(t)
-	bytesPass, err := bcrypt.GenerateFromPassword([]byte(testUserForm.Password), 14)
+	bytesPass, err := bcrypt.GenerateFromPassword([]byte(testUserForm1.Password), 14)
 	if err != nil {
 		t.Errorf("Error hashing password: %s", err)
 	}
-	_, err = client.User.Create().SetUsername(testUserForm.Username).SetEmail(testUserForm.Email).SetPassword(string(bytesPass[:])).SetValidated(isValidated).Save(context.Background())
+	mainUser, err := client.User.Create().SetUsername(testUserForm1.Username).SetEmail(testUserForm1.Email).SetPassword(string(bytesPass[:])).SetValidated(isValidated).Save(context.Background())
 	if err != nil {
 		t.Errorf("Error creating user: %s", err)
 	}
 	if isValidated {
-		loginResult, err := svc.Get().Auth.Login(ctx, auth.LoginForm{Username: testUserForm.Username, Password: testUserForm.Password})
+		loginResult, err := svc.Get().Auth.Login(ctx, auth.LoginForm{Username: testUserForm1.Username, Password: testUserForm1.Password})
 		if err != nil {
 			t.Errorf("Error logging in user: %s", err)
 		}
+
 		ctx = context.WithValue(ctx, utils.CsrfKey, loginResult.HashedCsrfToken)
 		ctx = context.WithValue(ctx, utils.JwtKey, loginResult.JWTToken)
+		ctx = context.WithValue(ctx, utils.UserIdKey, mainUser.ID)
 	}
 	if customSetup != nil {
 		customSetup(client, t, ctx)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"vocablo/customerrors"
 	"vocablo/ent"
 	"vocablo/ent/language"
 	"vocablo/ent/user"
@@ -17,13 +18,19 @@ import (
 func SetupUserWordTest(client *ent.Client, t *testing.T, ctx context.Context) {
 	client.Language.Create().SetCode("en").SaveX(ctx)
 	client.Language.Create().SetCode("es").SaveX(ctx)
-	mainUser, err := client.User.Query().Where(user.UsernameEQ(testUserForm.Username)).Only(ctx)
+	mainUser, err := client.User.Query().Where(user.UsernameEQ(testUserForm1.Username)).Only(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	client.UserWord.Create().SetTerm(testWordForm1.Term).SetLang(
 		client.Language.Query().Where(language.CodeEqualFold(testWordForm1.Lang)).OnlyX(ctx)).
 		SetDefinitions(testWordForm1.Definitions).SetUserID(mainUser.ID).SaveX(ctx)
+
+	otherUser := client.User.Create().SetUsername(testUserForm2.Username).SetEmail(testUserForm2.Email).SetPassword(testUserForm2.Password).SaveX(ctx)
+	client.UserWord.Create().SetTerm(otherUserWordForm.Term).SetLang(
+		client.Language.Query().Where(language.CodeEqualFold(otherUserWordForm.Lang)).OnlyX(ctx)).
+		SetDefinitions(otherUserWordForm.Definitions).SetUserID(otherUser.ID).SaveX(ctx)
+
 }
 
 func TestCreateWord(t *testing.T) {
@@ -38,7 +45,8 @@ func TestCreateWord(t *testing.T) {
 
 	assert.Equal(t, 200, resp.Code)
 
-	_, err = client.UserWord.Query().Where(entuserword.TermEQ(testWordForm2.Term)).Only(ctx)
+	userWordCreated, err := client.UserWord.Query().Where(entuserword.TermEQ(testWordForm2.Term)).WithUser().Only(ctx)
+	assert.Equal(t, ctx.Value(utils.UserIdKey), userWordCreated.Edges.User.ID)
 	assert.NoError(t, err)
 }
 
@@ -96,6 +104,33 @@ func TestUpdateWordEmptyId(t *testing.T) {
 	resp := testEnv.MakeAuthRequest("PUT", "/api/userword", utils.GetStringPointer(string(body)), ctx)
 
 	assert.Equal(t, 400, resp.Code)
+}
+
+func TestUpdateOtherUserWord(t *testing.T) {
+	client, teardown, ctx := SetupTest(t, true, SetupUserWordTest)
+	defer teardown(t)
+
+	otherUserWord, err := client.UserWord.Query().Where(entuserword.TermEQ(otherUserWordForm.Term)).Only(ctx)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updateForm := userword.UpdateForm{ID: otherUserWord.ID.String(), Term: utils.GetStringPointer(UPDATED_TERM)}
+	body, err := json.Marshal(updateForm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp := testEnv.MakeAuthRequest("PUT", "/api/userword", utils.GetStringPointer(string(body)), ctx)
+
+	var respBody utils.ResponseBody
+	err = json.Unmarshal(resp.Body.Bytes(), &respBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 403, resp.Code)
+	assert.Equal(t, customerrors.NOT_ALLOWED_RESOURCE, *respBody.ErrorCode)
 }
 
 func TestSearchWord(t *testing.T) {
@@ -221,4 +256,25 @@ func TestDeleteWord(t *testing.T) {
 
 	_, err = client.UserWord.Query().Where(entuserword.IDEQ(userWordCreated.ID)).Only(ctx)
 	assert.Error(t, err)
+}
+
+func TestDeleteOtherUserWord(t *testing.T) {
+	client, teardown, ctx := SetupTest(t, true, SetupUserWordTest)
+	defer teardown(t)
+
+	otherUserWord, err := client.UserWord.Query().Where(entuserword.TermEQ(otherUserWordForm.Term)).Only(ctx)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := testEnv.MakeAuthRequest("DELETE", "/api/userword/"+otherUserWord.ID.String(), nil, ctx)
+	var respBody utils.ResponseBody
+	err = json.Unmarshal(resp.Body.Bytes(), &respBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 403, resp.Code)
+	assert.Equal(t, customerrors.NOT_ALLOWED_RESOURCE, *respBody.ErrorCode)
 }

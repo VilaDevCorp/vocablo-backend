@@ -2,6 +2,7 @@ package userword
 
 import (
 	"context"
+	"fmt"
 	"vocablo/customerrors"
 	"vocablo/ent"
 	"vocablo/ent/language"
@@ -46,6 +47,15 @@ func (s *UserWordSvcImpl) Update(ctx context.Context, form UpdateForm) (*ent.Use
 
 	if err != nil {
 		return nil, err
+	}
+	userWord, err := s.DB.UserWord.Query().Where(userword.ID(uuidId)).WithUser().Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userIdKey := ctx.Value(utils.UserIdKey)
+	fmt.Println(userIdKey)
+	if userWord.Edges.User.ID != ctx.Value(utils.UserIdKey).(uuid.UUID) {
+		return nil, customerrors.NotAllowedResourceError{}
 	}
 
 	updateBuilder := s.DB.UserWord.UpdateOneID(uuidId)
@@ -104,6 +114,13 @@ func (s *UserWordSvcImpl) Delete(ctx context.Context, id string) error {
 	uuidId, err := uuid.Parse(id)
 	if err != nil {
 		return err
+	}
+	userWord, err := s.DB.UserWord.Query().Where(userword.ID(uuidId)).WithUser().Only(ctx)
+	if err != nil {
+		return err
+	}
+	if userWord.Edges.User.ID != ctx.Value(utils.UserIdKey).(uuid.UUID) {
+		return customerrors.NotAllowedResourceError{}
 	}
 	err = s.DB.UserWord.DeleteOneID(uuidId).Exec(ctx)
 	if err != nil {

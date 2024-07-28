@@ -17,6 +17,7 @@ type UpdateForm struct {
 type SearchForm struct {
 	Term     *string `json:"term"`
 	Lang     *string `json:"lang"`
+	UserId   *string `json:"userId"`
 	Page     int     `json:"page"`
 	PageSize int     `json:"pageSize"`
 }

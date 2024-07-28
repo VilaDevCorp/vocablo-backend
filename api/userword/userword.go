@@ -8,6 +8,7 @@ import (
 	"vocablo/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func Create(c *gin.Context) {
@@ -50,6 +51,9 @@ func Update(c *gin.Context) {
 		switch err.(type) {
 		case customerrors.EmptyFormFieldsError:
 			res = utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer("Mandatory fields not present"), nil)
+		case customerrors.NotAllowedResourceError:
+			res = utils.ErrorResponse(http.StatusForbidden,
+				utils.GetStringPointer("You dont have permissions to edit this element"), utils.GetStringPointer(customerrors.NOT_ALLOWED_RESOURCE))
 		default:
 			res = utils.InternalError(err)
 		}
@@ -67,6 +71,8 @@ func Search(c *gin.Context) {
 		c.AbortWithStatusJSON(res.Status, res.Body)
 		return
 	}
+	//we add to the form the user id of the logged user
+	form.UserId = utils.GetStringPointer(c.Request.Context().Value(utils.UserIdKey).(uuid.UUID).String())
 	svc := svc.Get()
 	page, err := svc.UserWord.Search(c.Request.Context(), form)
 	var res utils.HttpResponse
@@ -89,7 +95,13 @@ func Delete(c *gin.Context) {
 	err := svc.UserWord.Delete(c.Request.Context(), id)
 	var res utils.HttpResponse
 	if err != nil {
-		res = utils.InternalError(err)
+		switch err.(type) {
+		case customerrors.NotAllowedResourceError:
+			res = utils.ErrorResponse(http.StatusForbidden, utils.GetStringPointer("You dont have permissions to delete this element"),
+				utils.GetStringPointer(customerrors.NOT_ALLOWED_RESOURCE))
+		default:
+			res = utils.InternalError(err)
+		}
 	} else {
 		res = utils.SuccessResponse(nil)
 	}
