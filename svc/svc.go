@@ -1,18 +1,19 @@
 package svc
 
 import (
-	"appname/ent"
-	"appname/svc/auth"
-	"appname/svc/mail"
-	"appname/svc/user"
-	"appname/svc/verificationcode"
+	"vocablo/ent"
+	"vocablo/svc/auth"
+	"vocablo/svc/mail"
+	"vocablo/svc/user"
+	"vocablo/svc/userword"
+	"vocablo/svc/verificationcode"
 )
 
 type Service struct {
-	// Activity         activity.Svc
 	User             user.UserSvc
 	Auth             auth.AuthSvc
 	VerificationCode verificationcode.VerificationCodeSvc
+	UserWord         userword.UserWordSvc
 }
 
 var svc Service
@@ -27,5 +28,6 @@ func Setup(client *ent.Client, mailSvc mail.MailSvc) {
 		User:             &user.UserSvcImpl{DB: client},
 		Auth:             &auth.AuthSvcImpl{DB: client, VerificationCodeSvc: &verificationcode.VerificationCodeSvcImpl{DB: client, Mail: mailSvc}},
 		VerificationCode: &verificationcode.VerificationCodeSvcImpl{DB: client, Mail: mailSvc},
+		UserWord:         &userword.UserWordSvcImpl{DB: client},
 	}
 }

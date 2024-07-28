@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"vocablo/api/auth"
+	"vocablo/api/userword"
 	"vocablo/conf"
 	"vocablo/middleware"
 
@@ -36,6 +37,10 @@ func GetRouter() *gin.Engine {
 	priv := api.Group("/api")
 	priv.Use(middleware.Authentication())
 	priv.GET("/self", auth.Self)
+	priv.POST("/userword", userword.Create)
+	priv.PUT("/userword", userword.Update)
+	priv.POST("/userword/search", userword.Search)
+	priv.DELETE("/userword/:id", userword.Delete)
 	return api
 }
 
