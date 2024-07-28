@@ -1,46 +1,25 @@
 package test
 
 import (
-	"appname/customerrors"
-	"appname/ent"
-	entuser "appname/ent/user"
-	"appname/ent/verificationcode"
-	"appname/svc/user"
-	"appname/utils"
 	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+	"vocablo/customerrors"
+	"vocablo/ent"
+	entuser "vocablo/ent/user"
+	"vocablo/ent/verificationcode"
+	"vocablo/svc/user"
+	"vocablo/utils"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/bcrypt"
 )
 
-var testUserForm user.CreateForm = user.CreateForm{Username: "test", Password: "test", Email: "test@gmail.com"}
-var testUser2Form user.CreateForm = user.CreateForm{Username: "test2", Password: "test2", Email: "test2@gmail.com"}
-var verificationCodeForm *ent.VerificationCode = &ent.VerificationCode{Code: "123456", Type: utils.VALIDATION_TYPE}
-
-const INCORRECT_VERIFICATION_CODE string = "654321"
-const NEW_PASSWORD string = "newpassword"
-
-func SetupTest(t *testing.T, isValidated bool) (*ent.Client, func(t *testing.T)) {
-	client, teardown := StartTest(t)
-	bytesPass, err := bcrypt.GenerateFromPassword([]byte(testUserForm.Password), 14)
-	if err != nil {
-		t.Errorf("Error hashing password: %s", err)
-	}
-	_, err = client.User.Create().SetUsername(testUserForm.Username).SetEmail(testUserForm.Email).SetPassword(string(bytesPass[:])).SetValidated(isValidated).Save(context.Background())
-	if err != nil {
-		t.Errorf("Error creating user: %s", err)
-	}
-	return client, teardown
-}
-
 func TestLoginOk(t *testing.T) {
-	_, teardown := SetupTest(t, true)
+	_, teardown, _ := SetupTest(t, true, nil)
 	defer teardown(t)
 	body, _ := json.Marshal(&testUserForm)
 	resp := testEnv.MakeRequest("POST", "/api/public/login", utils.GetStringPointer(string(body)))
@@ -49,7 +28,7 @@ func TestLoginOk(t *testing.T) {
 }
 
 func TestLoginIncorrectCredentials(t *testing.T) {
-	_, teardown := SetupTest(t, true)
+	_, teardown, _ := SetupTest(t, true, nil)
 	defer teardown(t)
 	body, _ := json.Marshal(&testUser2Form)
 	resp := testEnv.MakeRequest("POST", "/api/public/login", utils.GetStringPointer(string(body)))
@@ -57,7 +36,7 @@ func TestLoginIncorrectCredentials(t *testing.T) {
 }
 
 func TestLoginEmptyForm(t *testing.T) {
-	_, teardown := SetupTest(t, true)
+	_, teardown, _ := SetupTest(t, true, nil)
 	defer teardown(t)
 	body, _ := json.Marshal(&user.CreateForm{})
 	resp := testEnv.MakeRequest("POST", "/api/public/login", utils.GetStringPointer(string(body)))
@@ -65,7 +44,7 @@ func TestLoginEmptyForm(t *testing.T) {
 }
 
 func TestLoginNotValidatedAccount(t *testing.T) {
-	_, teardown := SetupTest(t, false)
+	_, teardown, _ := SetupTest(t, false, nil)
 	defer teardown(t)
 	body, _ := json.Marshal(&testUserForm)
 	resp := testEnv.MakeRequest("POST", "/api/public/login", utils.GetStringPointer(string(body)))
@@ -79,7 +58,9 @@ func TestSignupOk(t *testing.T) {
 	resp := testEnv.MakeRequest("POST", "/api/public/register", utils.GetStringPointer(string(body)))
 	assert.Equal(t, 200, resp.Code, "Response status should be 200")
 	//We check that the verificationcode was created
-	existValidationCode, err := client.VerificationCode.Query().Where(verificationcode.And(verificationcode.HasUserWith(entuser.UsernameEQ(testUser2Form.Username)), verificationcode.TypeEQ(utils.VALIDATION_TYPE))).Exist(context.Background())
+	existValidationCode, err := client.VerificationCode.Query().Where(verificationcode.And(
+		verificationcode.HasUserWith(entuser.UsernameEQ(testUser2Form.Username)),
+		verificationcode.TypeEQ(utils.VALIDATION_TYPE))).Exist(context.Background())
 	if err != nil {
 		t.Errorf("Error checking validation code: %s", err)
 	}
@@ -95,7 +76,7 @@ func TestSignupEmptyForm(t *testing.T) {
 }
 
 func TestSignupMailAlreadyInUse(t *testing.T) {
-	_, teardown := SetupTest(t, true)
+	_, teardown, _ := SetupTest(t, true, nil)
 	defer teardown(t)
 	form := testUser2Form
 	form.Email = testUserForm.Email
@@ -112,7 +93,7 @@ func TestSignupMailAlreadyInUse(t *testing.T) {
 }
 
 func TestSignupUsernameAlreadyInUse(t *testing.T) {
-	_, teardown := SetupTest(t, true)
+	_, teardown, _ := SetupTest(t, true, nil)
 	defer teardown(t)
 	form := testUser2Form
 	form.Username = testUserForm.Username
@@ -129,12 +110,12 @@ func TestSignupUsernameAlreadyInUse(t *testing.T) {
 }
 
 func TestValidateAccountOk(t *testing.T) {
-	client, teardown := SetupTest(t, false)
+	client, teardown, ctx := SetupTest(t, false, nil)
 	defer teardown(t)
 	expirationDate := time.Now().Add(time.Minute * 15)
 	verificationCode, err := client.VerificationCode.Create().SetCode(verificationCodeForm.Code).SetUserID(client.User.Query().Where(
-		entuser.UsernameEQ(testUserForm.Username)).OnlyX(context.Background()).ID).
-		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(context.Background())
+		entuser.UsernameEQ(testUserForm.Username)).OnlyX(ctx).ID).
+		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(ctx)
 	if err != nil {
 		t.Errorf("Error creating verification code: %s", err)
 	}
@@ -142,7 +123,7 @@ func TestValidateAccountOk(t *testing.T) {
 
 	assert.Equal(t, 200, resp.Code, "Response status should be 200")
 	//We check that the user is validated
-	user, err := client.User.Query().Where(entuser.Username(testUserForm.Username)).Only(context.Background())
+	user, err := client.User.Query().Where(entuser.Username(testUserForm.Username)).Only(ctx)
 	if err != nil {
 		t.Errorf("Error getting user: %s", err)
 	}
@@ -150,12 +131,12 @@ func TestValidateAccountOk(t *testing.T) {
 }
 
 func TestValidateAccountWrongCode(t *testing.T) {
-	client, teardown := SetupTest(t, false)
+	client, teardown, ctx := SetupTest(t, false, nil)
 	defer teardown(t)
 	expirationDate := time.Now().Add(time.Minute * 15)
 	_, err := client.VerificationCode.Create().SetCode(verificationCodeForm.Code).SetUserID(client.User.Query().Where(
-		entuser.UsernameEQ(testUserForm.Username)).OnlyX(context.Background()).ID).
-		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(context.Background())
+		entuser.UsernameEQ(testUserForm.Username)).OnlyX(ctx).ID).
+		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(ctx)
 	if err != nil {
 		t.Errorf("Error creating verification code: %s", err)
 	}
@@ -172,12 +153,12 @@ func TestValidateAccountWrongCode(t *testing.T) {
 }
 
 func TestValidateAccountAlreadyUsedCode(t *testing.T) {
-	client, teardown := SetupTest(t, false)
+	client, teardown, ctx := SetupTest(t, false, nil)
 	defer teardown(t)
 	expirationDate := time.Now().Add(time.Minute * 15)
 	verificationCode, err := client.VerificationCode.Create().SetCode(verificationCodeForm.Code).SetUserID(client.User.Query().Where(
-		entuser.UsernameEQ(testUserForm.Username)).OnlyX(context.Background()).ID).
-		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(context.Background())
+		entuser.UsernameEQ(testUserForm.Username)).OnlyX(ctx).ID).
+		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(ctx)
 	if err != nil {
 		t.Errorf("Error creating verification code: %s", err)
 	}
@@ -195,12 +176,12 @@ func TestValidateAccountAlreadyUsedCode(t *testing.T) {
 }
 
 func TestValidateAccountExpiredCode(t *testing.T) {
-	client, teardown := SetupTest(t, false)
+	client, teardown, ctx := SetupTest(t, false, nil)
 	defer teardown(t)
 	expirationDate := time.Now().Add(time.Minute * -5)
 	verificationCode, err := client.VerificationCode.Create().SetCode(verificationCodeForm.Code).SetUserID(client.User.Query().Where(
-		entuser.UsernameEQ(testUserForm.Username)).OnlyX(context.Background()).ID).
-		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(context.Background())
+		entuser.UsernameEQ(testUserForm.Username)).OnlyX(ctx).ID).
+		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(ctx)
 	if err != nil {
 		t.Errorf("Error creating verification code: %s", err)
 	}
@@ -217,13 +198,13 @@ func TestValidateAccountExpiredCode(t *testing.T) {
 }
 
 func TestValidateAccountResendCode(t *testing.T) {
-	client, teardown := SetupTest(t, false)
+	client, teardown, ctx := SetupTest(t, false, nil)
 	defer teardown(t)
 	expirationDate := time.Now().Add(time.Minute * 15)
 	//We create a verification code with a creation date in the past to ensure that the just created code is the one used
 	verificationCode, err := client.VerificationCode.Create().SetCode(verificationCodeForm.Code).SetCreationDate(time.Now().Add(time.Minute * -5)).SetUserID(client.User.Query().Where(
-		entuser.UsernameEQ(testUserForm.Username)).OnlyX(context.Background()).ID).
-		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(context.Background())
+		entuser.UsernameEQ(testUserForm.Username)).OnlyX(ctx).ID).
+		SetType(utils.VALIDATION_TYPE).SetExpireDate(expirationDate).Save(ctx)
 	if err != nil {
 		t.Errorf("Error creating verification code: %s", err)
 	}
@@ -233,12 +214,12 @@ func TestValidateAccountResendCode(t *testing.T) {
 
 	//We check that the verification code was created
 	validationCode, err := client.VerificationCode.Query().Where(verificationcode.And(verificationcode.HasUserWith(entuser.UsernameEQ(testUserForm.Username)),
-		verificationcode.TypeEQ(utils.VALIDATION_TYPE))).Order(verificationcode.ByCreationDate(sql.OrderDesc())).First(context.Background())
+		verificationcode.TypeEQ(utils.VALIDATION_TYPE))).Order(verificationcode.ByCreationDate(sql.OrderDesc())).First(ctx)
 	if err != nil {
 		t.Errorf("Error getting verification code: %s", err)
 	}
 	//We check that the previous verification code is not working
-	verif, _ := client.VerificationCode.Query().All(context.Background())
+	verif, _ := client.VerificationCode.Query().All(ctx)
 	fmt.Println(verif)
 	resp = testEnv.MakeRequest("POST", "/api/public/validate/"+testUserForm.Username+"/"+verificationCode.Code, nil)
 	assert.Equal(t, 401, resp.Code, "Response status should be 401")
@@ -253,7 +234,7 @@ func TestValidateAccountResendCode(t *testing.T) {
 	resp = testEnv.MakeRequest("POST", "/api/public/validate/"+testUserForm.Username+"/"+validationCode.Code, nil)
 	assert.Equal(t, 200, resp.Code, "Response status should be 200")
 	//We check that the user is validated
-	user, err := client.User.Query().Where(entuser.Username(testUserForm.Username)).Only(context.Background())
+	user, err := client.User.Query().Where(entuser.Username(testUserForm.Username)).Only(ctx)
 	if err != nil {
 		t.Errorf("Error getting user: %s", err)
 	}
@@ -261,14 +242,14 @@ func TestValidateAccountResendCode(t *testing.T) {
 }
 
 func TestResetPasswordOk(t *testing.T) {
-	client, teardown := SetupTest(t, true)
+	client, teardown, ctx := SetupTest(t, true, nil)
 	defer teardown(t)
 	resp := testEnv.MakeRequest("POST", "/api/public/forgotten-password/"+testUserForm.Username, nil)
 	assert.Equal(t, 200, resp.Code, "Response status should be 200")
 
 	//We check that the verification code was created and we get the code number
 	validationCode, err := client.VerificationCode.Query().Where(verificationcode.And(verificationcode.HasUserWith(entuser.UsernameEQ(testUserForm.Username)),
-		verificationcode.TypeEQ(utils.RESET_TYPE))).Order(verificationcode.ByCreationDate(sql.OrderDesc())).First(context.Background())
+		verificationcode.TypeEQ(utils.RESET_TYPE))).Order(verificationcode.ByCreationDate(sql.OrderDesc())).First(ctx)
 	if err != nil {
 		t.Errorf("Error getting verification code: %s", err)
 	}
@@ -296,13 +277,10 @@ func TestResetPasswordOk(t *testing.T) {
 }
 
 func TestSelf(t *testing.T) {
-	_, teardown := SetupTest(t, true)
+	_, teardown, ctx := SetupTest(t, true, nil)
 	defer teardown(t)
 	body, _ := json.Marshal(&testUserForm)
 	resp := testEnv.MakeRequest("POST", "/api/public/login", utils.GetStringPointer(string(body)))
-	setCookieStr := resp.Header().Get("Set-Cookie")
-	setCookieStr, _ = strings.CutPrefix(setCookieStr, "JWT_TOKEN=")
-	jwtToken := strings.Split(setCookieStr, ";")[0]
 
 	bodyRes := resp.Body.Bytes()
 	var bodyResObj utils.ResponseBody
@@ -310,7 +288,7 @@ func TestSelf(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error unmarshalling response body: %s", err)
 	}
-	resp = testEnv.MakeAuthRequest("GET", "/api/self", nil, utils.GetStringPointer(bodyResObj.Data.(string)), utils.GetStringPointer(jwtToken))
+	resp = testEnv.MakeAuthRequest("GET", "/api/self", nil, ctx)
 	assert.Equal(t, 200, resp.Code, "Response status should be 200")
 	bodyRes = resp.Body.Bytes()
 	err = json.Unmarshal(bodyRes, &bodyResObj)
