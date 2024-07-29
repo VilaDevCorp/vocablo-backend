@@ -68,6 +68,9 @@ func SetupTest(t *testing.T, isValidated bool, customSetup func(client *ent.Clie
 		ctx = context.WithValue(ctx, utils.JwtKey, loginResult.JWTToken)
 		ctx = context.WithValue(ctx, utils.UserIdKey, mainUser.ID)
 	}
+	client.Language.Create().SetCode("es").SaveX(ctx)
+	client.Language.Create().SetCode("en").SaveX(ctx)
+
 	if customSetup != nil {
 		customSetup(client, t, ctx)
 	}

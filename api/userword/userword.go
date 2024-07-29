@@ -1,6 +1,7 @@
 package userword
 
 import (
+	"encoding/json"
 	"net/http"
 	"vocablo/customerrors"
 	"vocablo/svc"
@@ -30,8 +31,11 @@ func Create(c *gin.Context) {
 			res = utils.InternalError(err)
 		}
 	} else {
-
-		res = utils.SuccessResponse(createdWord)
+		createdWordJson, err := json.Marshal(createdWord)
+		if err != nil {
+			res = utils.InternalError(err)
+		}
+		res = utils.SuccessResponse(createdWordJson)
 	}
 	c.JSON(res.Status, res.Body)
 }

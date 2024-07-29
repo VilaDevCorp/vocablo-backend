@@ -15,7 +15,7 @@ import (
 type UserWordSvc interface {
 	Create(ctx context.Context, form CreateForm) (*ent.UserWord, error)
 	Update(ctx context.Context, form UpdateForm) (*ent.UserWord, error)
-	Search(ctx context.Context, form SearchForm) (*utils.Page[ent.UserWord], error)
+	Search(ctx context.Context, form SearchForm) (*utils.Page[*ent.UserWord], error)
 	Delete(ctx context.Context, id string) error
 }
 
@@ -80,7 +80,7 @@ func (s *UserWordSvcImpl) Update(ctx context.Context, form UpdateForm) (*ent.Use
 	return updatedUserWord, nil
 }
 
-func (s *UserWordSvcImpl) Search(ctx context.Context, form SearchForm) (*utils.Page[ent.UserWord], error) {
+func (s *UserWordSvcImpl) Search(ctx context.Context, form SearchForm) (*utils.Page[*ent.UserWord], error) {
 	if form.Page <= 0 {
 		form.Page = 0
 	}
@@ -98,7 +98,7 @@ func (s *UserWordSvcImpl) Search(ctx context.Context, form SearchForm) (*utils.P
 	if err != nil {
 		return nil, err
 	}
-	page := utils.Page[ent.UserWord]{PageNumber: form.Page}
+	page := utils.Page[*ent.UserWord]{PageNumber: form.Page}
 	if total > (form.Page+1)*form.PageSize {
 		page.HasNext = true
 	}

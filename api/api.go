@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"vocablo/api/auth"
 	"vocablo/api/userword"
+	"vocablo/api/word"
 	"vocablo/conf"
 	"vocablo/middleware"
 
@@ -16,7 +17,7 @@ import (
 func Start() error {
 	conf := conf.Get()
 	r := GetRouter()
-	log.Info().Msg(fmt.Sprintf("%s", conf.Port))
+	log.Info().Msg(fmt.Sprintf(conf.Port))
 	err := r.Run(fmt.Sprintf("%s:%s", conf.IP, conf.Port))
 	return err
 }
@@ -41,6 +42,7 @@ func GetRouter() *gin.Engine {
 	priv.PUT("/userword", userword.Update)
 	priv.POST("/userword/search", userword.Search)
 	priv.DELETE("/userword/:id", userword.Delete)
+	priv.GET("/word/:lang/:term", word.Search)
 	return api
 }
 

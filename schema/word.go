@@ -12,8 +12,9 @@ type Word struct {
 }
 
 type Definition struct {
-	Definition string `json:"definition"`
-	Example    string `json:"example"`
+	PartOfSpeech string `json:"partOfSpeech,omitempty"`
+	Definition   string `json:"definition,omitempty"`
+	Example      string `json:"example,omitempty"`
 }
 
 func (Word) Mixin() []ent.Mixin {

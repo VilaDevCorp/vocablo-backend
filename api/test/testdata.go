@@ -23,3 +23,5 @@ var otherUserWordForm = userword.CreateForm{Term: "regular", Lang: "en",
 	Definitions: []schema.Definition{{Definition: "normal", Example: "regular exercise"}}}
 
 const UPDATED_TERM = "adverse"
+
+const WORD_TO_SEARCH = "cat"

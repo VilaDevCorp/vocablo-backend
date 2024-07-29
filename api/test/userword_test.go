@@ -16,8 +16,6 @@ import (
 )
 
 func SetupUserWordTest(client *ent.Client, t *testing.T, ctx context.Context) {
-	client.Language.Create().SetCode("en").SaveX(ctx)
-	client.Language.Create().SetCode("es").SaveX(ctx)
 	mainUser, err := client.User.Query().Where(user.UsernameEQ(testUserForm1.Username)).Only(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -133,7 +131,7 @@ func TestUpdateOtherUserWord(t *testing.T) {
 	assert.Equal(t, customerrors.NOT_ALLOWED_RESOURCE, *respBody.ErrorCode)
 }
 
-func TestSearchWord(t *testing.T) {
+func TestSearchUserWord(t *testing.T) {
 	client, teardown, ctx := SetupTest(t, true, SetupUserWordTest)
 	defer teardown(t)
 
