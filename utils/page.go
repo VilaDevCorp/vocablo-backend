@@ -1,7 +1,7 @@
 package utils
 
 type Page[T any] struct {
-	PageNumber int
-	HasNext    bool
-	Content    []T
+	PageNumber int  `json:"pageNumber"`
+	HasNext    bool `json:"hasNext"`
+	Content    []T  `json:"content"`
 }

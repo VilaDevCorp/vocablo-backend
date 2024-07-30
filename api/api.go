@@ -42,7 +42,7 @@ func GetRouter() *gin.Engine {
 	priv.PUT("/userword", userword.Update)
 	priv.POST("/userword/search", userword.Search)
 	priv.DELETE("/userword/:id", userword.Delete)
-	priv.GET("/word/:lang/:term", word.Search)
+	priv.POST("/word/search", word.Search)
 	return api
 }
 

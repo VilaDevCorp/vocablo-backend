@@ -9,12 +9,13 @@ import (
 	"vocablo/ent"
 	"vocablo/ent/language"
 	"vocablo/ent/word"
+	"vocablo/utils"
 )
 
 type WordSvc interface {
 	Create(ctx context.Context, form CreateForm) (*ent.Word, error)
 	CreateBulk(ctx context.Context, forms []CreateForm) []*ent.Word
-	Search(ctx context.Context, term string, lang string) ([]*ent.Word, error)
+	Search(ctx context.Context, lang string, term string) (result *utils.Page[*ent.Word], err error)
 }
 
 type WordSvcImpl struct {
@@ -62,24 +63,25 @@ func (s *WordSvcImpl) CreateBulk(ctx context.Context, forms []CreateForm) []*ent
 	return words
 }
 
-func (s *WordSvcImpl) Search(ctx context.Context, term string, lang string) (result []*ent.Word, err error) {
+func (s *WordSvcImpl) Search(ctx context.Context, lang string, term string) (result *utils.Page[*ent.Word], err error) {
 	if term == "" || lang == "" {
 		return nil, customerrors.EmptyFormFieldsError{}
 	}
 	query := s.DB.Word.Query()
 	query = query.Where(word.TermContainsFold(term))
 	query = query.Where(word.HasLangWith(language.CodeEqualFold(lang)))
-	result, err = query.All(ctx)
+	words, err := query.All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(result) == 0 {
-		result, err = s.searchInApi(ctx, term, lang)
+	if len(words) == 0 {
+		words, err = s.searchInApi(ctx, term, lang)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return result, nil
+	var page utils.Page[*ent.Word] = utils.Page[*ent.Word]{PageNumber: 0, Content: words, HasNext: false}
+	return &page, nil
 }
 
 func (s *WordSvcImpl) searchInApi(ctx context.Context, term string, lang string) ([]*ent.Word, error) {

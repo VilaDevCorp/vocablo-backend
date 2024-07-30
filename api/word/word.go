@@ -4,27 +4,28 @@ import (
 	"net/http"
 	"vocablo/customerrors"
 	"vocablo/svc"
+	"vocablo/svc/word"
 	"vocablo/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Search(c *gin.Context) {
-	term, present := c.Params.Get("term")
-	if !present {
+	var form word.SearchForm
+	err := c.ShouldBind(&form)
+	if err != nil {
 		res := utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer("Mandatory fields are empty"), nil)
 		c.JSON(res.Status, res.Body)
 		return
 	}
-	lang, present := c.Params.Get("lang")
-	if !present {
+	if form.Term == "" || form.Lang == "" {
 		res := utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer("Mandatory fields are empty"), nil)
 		c.JSON(res.Status, res.Body)
 		return
 	}
 
 	svc := svc.Get()
-	words, err := svc.Word.Search(c.Request.Context(), term, lang)
+	words, err := svc.Word.Search(c.Request.Context(), form.Lang, form.Term)
 	var res utils.HttpResponse
 	if err != nil {
 		switch err.(type) {

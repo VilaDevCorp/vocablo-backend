@@ -7,3 +7,8 @@ type CreateForm struct {
 	Definitions []schema.Definition `json:"definitions" binding:"required"`
 	Lang        string              `json:"lang" binding:"required"`
 }
+
+type SearchForm struct {
+	Term string `json:"term"`
+	Lang string `json:"lang"`
+}
