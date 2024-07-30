@@ -32,7 +32,7 @@ func (s *UserWordSvcImpl) Create(ctx context.Context, form CreateForm) (*ent.Use
 		return nil, err
 	}
 	userID := ctx.Value(utils.UserIdKey).(uuid.UUID)
-	userWord, err := s.DB.UserWord.Create().SetTerm(form.Term).SetLangID(lang.ID).SetUserID(userID).Save(ctx)
+	userWord, err := s.DB.UserWord.Create().SetTerm(form.Term).SetDefinitions(form.Definitions).SetLangID(lang.ID).SetUserID(userID).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
