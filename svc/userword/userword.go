@@ -15,6 +15,7 @@ import (
 type UserWordSvc interface {
 	Create(ctx context.Context, form CreateForm) (*ent.UserWord, error)
 	Update(ctx context.Context, form UpdateForm) (*ent.UserWord, error)
+	Get(ctx context.Context, id string) (*ent.UserWord, error)
 	Search(ctx context.Context, form SearchForm) (*utils.Page[*ent.UserWord], error)
 	Delete(ctx context.Context, id string) error
 }
@@ -78,6 +79,25 @@ func (s *UserWordSvcImpl) Update(ctx context.Context, form UpdateForm) (*ent.Use
 		return nil, err
 	}
 	return updatedUserWord, nil
+}
+
+func (s *UserWordSvcImpl) Get(ctx context.Context, id string) (*ent.UserWord, error) {
+	uuidId, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+	userWord, err := s.DB.UserWord.Query().Where(userword.ID(uuidId)).WithUser().Only(ctx)
+	if err != nil {
+		if _, ok := err.(*ent.NotFoundError); ok {
+			return nil, customerrors.NotFoundError{}
+		}
+		return nil, err
+	}
+
+	if userWord.Edges.User.ID != ctx.Value(utils.UserIdKey).(uuid.UUID) {
+		return nil, customerrors.NotAllowedResourceError{}
+	}
+	return userWord, nil
 }
 
 func (s *UserWordSvcImpl) Search(ctx context.Context, form SearchForm) (*utils.Page[*ent.UserWord], error) {

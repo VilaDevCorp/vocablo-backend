@@ -67,6 +67,29 @@ func Update(c *gin.Context) {
 	c.JSON(res.Status, res.Body)
 }
 
+func Get(c *gin.Context) {
+	id, present := c.Params.Get("id")
+	if !present {
+		res := utils.ErrorResponse(http.StatusBadRequest, utils.GetStringPointer("Mandatory fields not present"), nil)
+		c.AbortWithStatusJSON(res.Status, res.Body)
+		return
+	}
+	svc := svc.Get()
+	word, err := svc.UserWord.Get(c.Request.Context(), id)
+	var res utils.HttpResponse
+	if err != nil {
+		switch err.(type) {
+		case customerrors.NotFoundError:
+			res = utils.ErrorResponse(http.StatusNotFound, utils.GetStringPointer("Word not found"), nil)
+		default:
+			res = utils.InternalError(err)
+		}
+	} else {
+		res = utils.SuccessResponse(word)
+	}
+	c.JSON(res.Status, res.Body)
+}
+
 func Search(c *gin.Context) {
 	var form userword.SearchForm
 	err := c.ShouldBind(&form)
