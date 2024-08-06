@@ -13,6 +13,7 @@ const (
 	INCORRECT_VALIDATION_CODE    = "INCORRECT_VALIDATION_CODE"
 	ALREADY_USED_VALIDATION_CODE = "ALREADY_USED_VALIDATION_CODE"
 	NOT_ALLOWED_RESOURCE         = "NOT_ALLOWED_RESOURCE"
+	NOT_ENOUGH_WORDS_FOR_QUIZ    = "NOT_ENOUGH_WORDS_FOR_QUIZ"
 )
 
 type AlreadyUsedValidationCodeError struct{}
@@ -87,4 +88,10 @@ type NotFoundError struct {
 
 func (e NotFoundError) Error() string {
 	return e.Resource + " not found: "
+}
+
+type NotEnoughWordsForQuizError struct{}
+
+func (e NotEnoughWordsForQuizError) Error() string {
+	return "Not enough words to create a quiz"
 }

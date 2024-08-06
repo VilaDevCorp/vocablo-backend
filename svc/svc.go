@@ -4,6 +4,7 @@ import (
 	"vocablo/ent"
 	"vocablo/svc/auth"
 	"vocablo/svc/mail"
+	"vocablo/svc/quiz"
 	"vocablo/svc/user"
 	"vocablo/svc/userword"
 	"vocablo/svc/verificationcode"
@@ -16,6 +17,7 @@ type Service struct {
 	VerificationCode verificationcode.VerificationCodeSvc
 	UserWord         userword.UserWordSvc
 	Word             word.WordSvc
+	Quiz             quiz.QuizSvc
 }
 
 var svc Service
@@ -31,5 +33,6 @@ func Setup(client *ent.Client, mailSvc mail.MailSvc) {
 		VerificationCode: &verificationcode.VerificationCodeSvcImpl{DB: client, Mail: mailSvc},
 		UserWord:         &userword.UserWordSvcImpl{DB: client},
 		Word:             &word.WordSvcImpl{DB: client},
+		Quiz:             &quiz.QuizSvcImpl{DB: client},
 	}
 }

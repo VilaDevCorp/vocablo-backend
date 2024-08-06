@@ -3,6 +3,7 @@ package test
 import (
 	"vocablo/ent"
 	"vocablo/schema"
+	"vocablo/svc/quiz"
 	"vocablo/svc/user"
 	"vocablo/svc/userword"
 	"vocablo/utils"
@@ -21,6 +22,10 @@ var testWordForm2 = userword.CreateForm{Term: "good", Lang: "en",
 	Definitions: []schema.Definition{{Definition: "not bad", Example: "vegetables are good"}}}
 var otherUserWordForm = userword.CreateForm{Term: "regular", Lang: "en",
 	Definitions: []schema.Definition{{Definition: "normal", Example: "regular exercise"}}}
+var testWordForm3 = userword.CreateForm{Term: "dog", Lang: "en",
+	Definitions: []schema.Definition{{Definition: "a domesticated animal", Example: "a dog barking"}}}
+
+var testCreateQuizForm = quiz.CreateForm{NQuestions: 4}
 
 const UPDATED_TERM = "adverse"
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"vocablo/api/auth"
+	"vocablo/api/quiz"
 	"vocablo/api/userword"
 	"vocablo/api/word"
 	"vocablo/conf"
@@ -44,6 +45,8 @@ func GetRouter() *gin.Engine {
 	priv.POST("/userword/search", userword.Search)
 	priv.DELETE("/userword/:id", userword.Delete)
 	priv.POST("/word/search", word.Search)
+	priv.POST("/quiz", quiz.Create)
+	priv.POST("/quiz/answer", quiz.Answer)
 	return api
 }
 
