@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 	"vocablo/ent"
+	"vocablo/svc/word"
 	"vocablo/utils"
 
 	"github.com/stretchr/testify/assert"
@@ -20,11 +21,17 @@ func TestSearchWord(t *testing.T) {
 	//We check that no words are in the db
 	assert.Equal(t, 0, len(wordsInDb))
 
-	resp := testEnv.MakeAuthRequest("GET", "/api/word/en/"+WORD_TO_SEARCH, nil, ctx)
+	searchForm := word.SearchForm{Term: WORD_TO_SEARCH, Lang: "en"}
+	body, err := json.Marshal(searchForm)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := testEnv.MakeAuthRequest("POST", "/api/word/search", utils.GetStringPointer(string(body)), ctx)
 	assert.Equal(t, 200, resp.Code)
 
 	var respBody utils.ResponseBody
-	var respData []ent.Word
+	var respData utils.Page[ent.Word]
 	err = json.Unmarshal(resp.Body.Bytes(), &respBody)
 	if err != nil {
 		t.Fatal(err)
@@ -39,7 +46,7 @@ func TestSearchWord(t *testing.T) {
 	}
 
 	//We check that the response is not empty
-	assert.NotEqual(t, 0, len(respData))
+	assert.NotEqual(t, 0, len(respData.Content))
 	wordsInDb, err = client.Word.Query().All(ctx)
 	if err != nil {
 		t.Errorf("Error querying words: %s", err)
@@ -49,7 +56,7 @@ func TestSearchWord(t *testing.T) {
 	assert.NotEqual(t, 0, wordsInDbLength)
 
 	//We check that the words are the same after another search
-	resp = testEnv.MakeAuthRequest("GET", "/api/word/en/"+WORD_TO_SEARCH, nil, ctx)
+	resp = testEnv.MakeAuthRequest("POST", "/api/word/search", utils.GetStringPointer(string(body)), ctx)
 	wordsInDb, err = client.Word.Query().All(ctx)
 	if err != nil {
 		t.Errorf("Error querying words: %s", err)
