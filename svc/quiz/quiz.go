@@ -99,7 +99,7 @@ func (s *QuizSvcImpl) Answer(ctx context.Context, filledQuiz Quiz) (int, error) 
 	}
 	for _, question := range filledQuiz.Questions {
 		//If the answer is correct, we add the value of the question to the total score and we add 10 to the learning progress of the word
-		if question.Options[question.AnswerPos] == question.Options[question.CorrectOptionPos] {
+		if question.AnswerPos != nil && question.Options[*question.AnswerPos] == question.Options[question.CorrectOptionPos] {
 			totalScore += questionValue
 			err = clientTx.UserWord.UpdateOneID(question.UserWordID).AddLearningProgress(10).Exec(ctx)
 			if err != nil {

@@ -6,6 +6,7 @@ import (
 	"vocablo/customerrors"
 	"vocablo/ent"
 	"vocablo/ent/language"
+	"vocablo/ent/user"
 	"vocablo/ent/userword"
 	"vocablo/utils"
 
@@ -107,18 +108,32 @@ func (s *UserWordSvcImpl) Search(ctx context.Context, form SearchForm) (*utils.P
 	if form.PageSize <= 0 {
 		form.PageSize = 10
 	}
-	query := s.DB.UserWord.Query()
+	//we only allow the user to search his own words
+	query := s.DB.UserWord.Query().Where(userword.HasUserWith(user.IDEQ(ctx.Value(utils.UserIdKey).(uuid.UUID))))
 	if form.Term != nil && *form.Term != "" {
 		query = query.Where(userword.TermContainsFold(*form.Term))
 	}
 	if form.Lang != nil {
 		query = query.Where(userword.HasLangWith(language.CodeEqualFold(*form.Lang)))
 	}
+	if form.Learned != nil {
+		if *form.Learned {
+			query = query.Where(userword.LearningProgressGTE(100))
+		} else {
+			query = query.Where(userword.LearningProgressLT(100))
+		}
+	}
 	total, err := query.Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 	page := utils.Page[*ent.UserWord]{PageNumber: form.Page}
+	page.NElements = total
+
+	if form.Count {
+		return &page, nil
+	}
+
 	if total > (form.Page+1)*form.PageSize {
 		page.HasNext = true
 	}

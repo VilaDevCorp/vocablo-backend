@@ -12,5 +12,5 @@ type QuizQuestion struct {
 	Question         string    `json:"question"`
 	Options          []string  `json:"options"`
 	CorrectOptionPos int       `json:"correctOptionPos"`
-	AnswerPos        int       `json:"answerPos"`
+	AnswerPos        *int      `json:"answerPos"`
 }

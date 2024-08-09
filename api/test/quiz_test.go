@@ -142,7 +142,7 @@ func TestAnswerQuiz(t *testing.T) {
 
 	//We answer the quiz with the correct answers
 	for i, question := range respQuiz.Questions {
-		respQuiz.Questions[i].AnswerPos = question.CorrectOptionPos
+		respQuiz.Questions[i].AnswerPos = utils.GetIntPointer(question.CorrectOptionPos)
 	}
 	body, err = json.Marshal(respQuiz)
 	if err != nil {
@@ -159,9 +159,9 @@ func TestAnswerQuiz(t *testing.T) {
 	//We answer the quiz with the only half of the correct answers
 	for i, question := range respQuiz.Questions {
 		if i%2 == 0 {
-			respQuiz.Questions[i].AnswerPos = question.CorrectOptionPos
+			respQuiz.Questions[i].AnswerPos = utils.GetIntPointer(question.CorrectOptionPos)
 		} else {
-			respQuiz.Questions[i].AnswerPos = (question.CorrectOptionPos + 1) % 4
+			respQuiz.Questions[i].AnswerPos = utils.GetIntPointer((question.CorrectOptionPos + 1) % 4)
 		}
 	}
 	body, err = json.Marshal(respQuiz)
