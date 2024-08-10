@@ -68,7 +68,7 @@ func (s *WordSvcImpl) Search(ctx context.Context, lang string, term string) (res
 		return nil, customerrors.EmptyFormFieldsError{}
 	}
 	query := s.DB.Word.Query()
-	query = query.Where(word.TermContainsFold(term))
+	query = query.Where(word.TermEqualFold(term))
 	query = query.Where(word.HasLangWith(language.CodeEqualFold(lang)))
 	words, err := query.All(ctx)
 	if err != nil {
@@ -91,6 +91,9 @@ func (s *WordSvcImpl) searchInApi(ctx context.Context, term string, lang string)
 	resp, err := http.Get("https://api.dictionaryapi.dev/api/v2/entries/en/" + term)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return []*ent.Word{}, nil
 	}
 	var respObj apischema.ApiResponse
 	err = json.NewDecoder(resp.Body).Decode(&respObj)
