@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"vocablo/customerrors"
 	"vocablo/ent"
@@ -134,10 +135,9 @@ func TestUpdateOtherUserWord(t *testing.T) {
 func TestSearchUserWord(t *testing.T) {
 	client, teardown, ctx := SetupTest(t, true, SetupUserWordTest)
 	defer teardown(t)
-
 	_, err := client.UserWord.Create().SetTerm(testWordForm2.Term).SetLang(
 		client.Language.Query().Where(language.CodeEqualFold(testWordForm2.Lang)).OnlyX(ctx)).
-		SetDefinitions(testWordForm2.Definitions).Save(ctx)
+		SetDefinitions(testWordForm2.Definitions).SetUser(client.User.Query().Where(user.UsernameEQ(testUserForm1.Username)).OnlyX(ctx)).Save(ctx)
 
 	if err != nil {
 		t.Fatal(err)
@@ -187,6 +187,9 @@ func TestSearchUserWord(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	r := client.UserWord.Query().WithUser().AllX(ctx)
+	fmt.Print(r)
 
 	assert.Equal(t, 1, len(respData.Content))
 	assert.Equal(t, testWordForm2.Term, respData.Content[0].Term)
