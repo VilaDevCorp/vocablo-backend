@@ -2,20 +2,18 @@ version: '3.3'
 
 services:
   db:
-      image: mysql:8.0
-      restart: always
-      ports:
-        - "3307:3306"
-      volumes:
-        - db-volume:/var/lib/mysql
-      environment:
-        MYSQL_ROOT_PASSWORD: 1234
-        MYSQL_DATABASE: vocablo
+    image: "postgres:16-alpine"
+    environment:
+      - "POSTGRES_DB=${DB_DB}"
+      - "POSTGRES_PASSWORD=${DB_PASS}"
+      - "POSTGRES_USER=${DB_USER}"
+    volumes:
+      - db:/data/db  
   api: 
     image: vocablo-api:latest
     restart: always
     ports:
-      - "8080:8080"
+      - "8084:8080"
     depends_on:
       - db
       

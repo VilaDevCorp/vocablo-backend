@@ -6,11 +6,11 @@ Dev:
   CorsHost: http://192.168.1.129:5173
   FrontUrl: http://192.168.1.129:5173
 Prod:
-  CookieHost: trainwithvocablo.com
+  CookieHost: vocablo.dviladev.com
   CookieSecure: true
   HttpOnly: true
-  CorsHost: https://vocablo.com
-  FrontUrl: https://vocablo.com
+  CorsHost: https://vocablo.dviladev.com
+  FrontUrl: https://vocablo.dviladev.com
 IP: 0.0.0.0
 Port: 8080
 JwtKey: vocablo258SECRETkey
@@ -22,10 +22,10 @@ Mail:
   Texts:
     ValidateEmail:
       Subject: Validation code
-      Body: "You can use this code to validate your account: %s"
+      Body: "You can use this code to validate your Vocablo account: %s"
     ResetPassword:
       Subject: Reset password code
-      Body: "You can use this code to reset your password: %s"
+      Body: "You can use this code to reset your Vocablo password: %s"
 DB:
   Port: 5436
   Host: localhost
