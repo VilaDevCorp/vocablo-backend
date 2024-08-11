@@ -26,35 +26,30 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.22.4
-      - name: Go verify
-        run: go mod verify
-      # - name: Install dependencies
-      #   run: go get .
       - name: Generate ent code
         run: make ent
-      - name: Build
-        run: go build -v ./...
       - name: Test with the Go CLI
         run: go test -v ./...  
-  # deploy:
-  #   needs: [test]
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   steps:
-  #     - name: Deploy to Contabo server
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       with:
-  #         host: ${{ secrets.CONTABO_HOST }}
-  #         username: ${{ secrets.CONTABO_USERNAME }}
-  #         password: ${{ secrets.CONTABO_PASSWORD }}
-  #         port: 22
-  #         script: |
-  #           cd services/fundshare-backend
-  #           git checkout main
-  #           ${{ secrets.GIT_PULL_COMMAND }}
-  #           mvn package -B -DskipTests
-  #           docker build -t fundshare-backend .
-  #           docker build -t fundshare-backend-e2e  -f DockerfilePre .
-  #           docker-compose -f docker-compose-prod.yml up -d
+  deploy:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Deploy to Contabo server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.CONTABO_HOST }}
+          username: ${{ secrets.CONTABO_USERNAME }}
+          password: ${{ secrets.CONTABO_PASSWORD }}
+          port: 22
+          script: |
+            cd services/vocablo-backend
+            git checkout main
+            ${{ secrets.GIT_PULL_COMMAND }}
+            rm -rf ent
+            go mod tidy
+            make ent
+            docker build -t vocablo-api .
+            docker-compose -f docker-compose-prod.yml up -d
 
 #git pull https://davilasanvilar:{TOKEN}@github.com/davilasanvilar/fundshare-backend.git
