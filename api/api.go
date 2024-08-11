@@ -51,5 +51,5 @@ func GetRouter() *gin.Engine {
 }
 
 func health(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Everything is FINE"})
+	c.JSON(http.StatusOK, gin.H{"message": "Everything is FINE2"})
 }
