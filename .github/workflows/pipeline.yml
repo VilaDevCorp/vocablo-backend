@@ -44,6 +44,9 @@ jobs:
           port: 22
           script: |
             cd services/vocablo-backend
+            go version
+            which go
+            echo $PATH
             git checkout main
             ${{ secrets.GIT_PULL_COMMAND }}
             rm -rf ent
