@@ -48,8 +48,8 @@ jobs:
             git checkout main
             ${{ secrets.GIT_PULL_COMMAND }}
             rm -rf ent
-            go mod tidy
             make ent
+            go mod tidy
             docker build -t vocablo-api .
             docker-compose -f docker-compose-prod.yml up -d
 
