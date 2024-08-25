@@ -44,6 +44,7 @@ func GetRouter() *gin.Engine {
 	priv.GET("/userword/:id", userword.Get)
 	priv.POST("/userword/search", userword.Search)
 	priv.DELETE("/userword/:id", userword.Delete)
+	priv.GET("/userword/progress", userword.UserProgress)
 	priv.POST("/word/search", word.Search)
 	priv.POST("/quiz", quiz.Create)
 	priv.POST("/quiz/answer", quiz.Answer)

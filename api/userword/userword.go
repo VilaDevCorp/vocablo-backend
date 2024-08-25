@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"vocablo/customerrors"
+	"vocablo/schema"
 	"vocablo/svc"
 	"vocablo/svc/userword"
 	"vocablo/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func Create(c *gin.Context) {
@@ -99,7 +99,6 @@ func Search(c *gin.Context) {
 		return
 	}
 	//we add to the form the user id of the logged user
-	form.UserId = utils.GetStringPointer(c.Request.Context().Value(utils.UserIdKey).(uuid.UUID).String())
 	svc := svc.Get()
 	page, err := svc.UserWord.Search(c.Request.Context(), form)
 	var res utils.HttpResponse
@@ -132,5 +131,45 @@ func Delete(c *gin.Context) {
 	} else {
 		res = utils.SuccessResponse(nil)
 	}
+	c.JSON(res.Status, res.Body)
+}
+
+func UserProgress(c *gin.Context) {
+	svc := svc.Get()
+
+	//We search the total words of the user
+	searchForm := userword.SearchForm{Count: true}
+
+	totalWordsPage, err := svc.UserWord.Search(c.Request.Context(), searchForm)
+	if err != nil {
+		res := utils.InternalError(err)
+		c.JSON(res.Status, res.Body)
+		return
+	}
+
+	//We search the learned words of the user
+	searchForm.Learned = utils.GetBoolPointer(true)
+	learnedWordsPage, err := svc.UserWord.Search(c.Request.Context(), searchForm)
+	if err != nil {
+		res := utils.InternalError(err)
+		c.JSON(res.Status, res.Body)
+		return
+	}
+
+	//We search the not learned words of the user
+	searchForm.Learned = utils.GetBoolPointer(false)
+	notLearnedWordsPage, err := svc.UserWord.Search(c.Request.Context(), searchForm)
+	if err != nil {
+		res := utils.InternalError(err)
+		c.JSON(res.Status, res.Body)
+		return
+	}
+
+	var userProgress schema.UserWordProgress = schema.UserWordProgress{
+		TotalWords:     totalWordsPage.NElements,
+		LearnedWords:   learnedWordsPage.NElements,
+		UnlearnedWords: notLearnedWordsPage.NElements}
+
+	res := utils.SuccessResponse(userProgress)
 	c.JSON(res.Status, res.Body)
 }

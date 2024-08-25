@@ -7,3 +7,7 @@ func GetStringPointer(s string) *string {
 func GetIntPointer(i int) *int {
 	return &i
 }
+
+func GetBoolPointer(b bool) *bool {
+	return &b
+}

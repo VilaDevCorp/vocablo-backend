@@ -11,6 +11,12 @@ type UserWord struct {
 	ent.Schema
 }
 
+type UserWordProgress struct {
+	TotalWords     int `json:"totalWords,omitempty"`
+	LearnedWords   int `json:"learnedWords,omitempty"`
+	UnlearnedWords int `json:"unlearnedWords,omitempty"`
+}
+
 func (UserWord) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		CommonMixin{},
