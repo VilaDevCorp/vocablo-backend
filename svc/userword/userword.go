@@ -10,6 +10,7 @@ import (
 	"vocablo/ent/userword"
 	"vocablo/utils"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
@@ -137,7 +138,25 @@ func (s *UserWordSvcImpl) Search(ctx context.Context, form SearchForm) (*utils.P
 	if total > (form.Page+1)*form.PageSize {
 		page.HasNext = true
 	}
-	userWords, err := query.Offset(form.Page * form.PageSize).Limit(form.PageSize).All(ctx)
+
+	orderDir := sql.OrderDesc()
+	if form.OrderDir != nil {
+		if (*form.OrderDir) == "asc" {
+			orderDir = sql.OrderAsc()
+		}
+	}
+
+	orderBy := userword.ByCreationDate(orderDir)
+	if form.OrderBy != nil {
+		if (*form.OrderBy) == "term" {
+			orderBy = userword.ByTerm(orderDir)
+		}
+		if (*form.OrderBy) == "learningProgress" {
+			orderBy = userword.ByLearningProgress(orderDir)
+		}
+	}
+
+	userWords, err := query.Offset(form.Page * form.PageSize).Limit(form.PageSize).Order(orderBy).All(ctx)
 	if err != nil {
 		return nil, err
 	}
