@@ -1,16 +1,18 @@
-version: '3.3'
-
 services:
   db:
     image: "postgres:16-alpine"
     environment:
-      - "POSTGRES_DB=${DB_DB}"
+      - "POSTGRES_DB=vocablo"
       - "POSTGRES_PASSWORD=${DB_PASS}"
-      - "POSTGRES_USER=${DB_USER}"
+      - "POSTGRES_USER=root"
     volumes:
-      - db:/data/db  
+      - db-volume:/data/db
   api: 
     image: vocablo-api:latest
+    environment:
+      DB_PASS: ${DB_PASS}
+      MAIL_PASS: ${MAIL_PASS}
+      JWT_SECRET: ${JWT_SECRET}
     restart: always
     ports:
       - "8084:8080"

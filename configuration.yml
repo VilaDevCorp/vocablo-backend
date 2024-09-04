@@ -1,4 +1,4 @@
-Env: dev
+Env: prod
 Dev:
   CookieHost: 192.168.1.129
   CookieSecure: false
@@ -13,10 +13,9 @@ Prod:
   FrontUrl: https://vocablo.dviladev.com
 IP: 0.0.0.0
 Port: 8080
-JwtKey: vocablo258SECRETkey
+JwtKey: vocablosecret
 Mail:
   User: viladevapps@gmail.com
-  Pass: iabn dhoj wpyc zzwu
   SmtpHost: smtp.gmail.com
   SmtpPort: 587
   Texts:
@@ -27,8 +26,8 @@ Mail:
       Subject: Reset password code
       Body: "You can use this code to reset your Vocablo password: %s"
 DB:
-  Port: 5436
-  Host: localhost
-  User: user
-  Pass: password
-  DB: database
+  Port: 5432
+  Host: db
+  User: root
+  Pass: 123456
+  DB: vocablo

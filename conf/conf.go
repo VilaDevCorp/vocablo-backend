@@ -2,6 +2,7 @@ package conf
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -67,9 +68,17 @@ func Setup() error {
 
 	if err != nil {
 		log.Error().Err(err).Msg("Error reading conf file")
-		return errors.New("Error reading conf file")
+		return errors.New("error reading conf file")
 	}
-
+	if os.Getenv("DB_PASS") != "" {
+		conf.DB.Pass = os.Getenv("DB_PASS")
+	}
+	if os.Getenv("JWT_SECRET") != "" {
+		conf.JwtKey = os.Getenv("JWT_SECRET")
+	}
+	if os.Getenv("MAIL_PASS") != "" {
+		conf.Mail.Pass = os.Getenv("MAIL_PASS")
+	}
 	log.Info().Msg("Conf file loaded succesfully")
 	return nil
 }
