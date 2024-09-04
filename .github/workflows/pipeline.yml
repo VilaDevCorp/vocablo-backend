@@ -46,7 +46,7 @@ jobs:
             cd services/vocablo-backend
             export PATH=$PATH:/usr/local/go/bin
             git checkout main
-            ${{ secrets.GIT_PULL_COMMAND }}
+            git pull https://davilasanvilar:${{ secrets.GIT_PAT }}@github.com/VilaDevCorp/vocablo-backend.git
             rm -rf ent
             make ent
             go mod tidy
