@@ -43,6 +43,7 @@ jobs:
           password: ${{ secrets.CONTABO_PASSWORD }}
           port: 22
           script: |
+            set -e
             cd services/vocablo-backend
             export PATH=$PATH:/usr/local/go/bin
             git checkout main
