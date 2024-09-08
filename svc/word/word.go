@@ -10,6 +10,8 @@ import (
 	"vocablo/ent/language"
 	"vocablo/ent/word"
 	"vocablo/utils"
+
+	"github.com/rs/zerolog/log"
 )
 
 type WordSvc interface {
@@ -72,11 +74,14 @@ func (s *WordSvcImpl) Search(ctx context.Context, lang string, term string) (res
 	query = query.Where(word.HasLangWith(language.CodeEqualFold(lang)))
 	words, err := query.All(ctx)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 	if len(words) == 0 {
+		log.Debug().Msg("Word not found in the database, searching in the API")
 		words, err = s.searchInApi(ctx, term, lang)
 		if err != nil {
+			log.Error().Msg(err.Error())
 			return nil, err
 		}
 	}
@@ -90,6 +95,7 @@ func (s *WordSvcImpl) searchInApi(ctx context.Context, term string, lang string)
 	}
 	resp, err := http.Get("https://api.dictionaryapi.dev/api/v2/entries/en/" + term)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 	if resp.StatusCode != 200 {
