@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -27,7 +28,7 @@ func (Language) Fields() []ent.Field {
 // Edges of the Language.
 func (Language) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("words", Word.Type),
-		edge.To("userWords", UserWord.Type),
+		edge.To("words", Word.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("userWords", UserWord.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
