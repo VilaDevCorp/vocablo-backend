@@ -188,3 +188,27 @@ func Self(c *gin.Context) {
 	res := utils.SuccessResponse(user)
 	c.JSON(res.Status, res.Body)
 }
+
+func DeleteAccount(c *gin.Context) {
+	jwtCookie, err := c.Cookie("JWT_TOKEN")
+	if err != nil {
+		res := utils.InternalError(err)
+		c.AbortWithStatusJSON(res.Status, res.Body)
+		return
+	}
+	claims, err := utils.ValidateToken(jwtCookie)
+	if err != nil {
+		res := utils.InternalError(err)
+		c.AbortWithStatusJSON(res.Status, res.Body)
+		return
+	}
+	svc := svc.Get()
+	err = svc.User.Delete(c.Request.Context(), claims.Id)
+	var res utils.HttpResponse
+	if err != nil {
+		res = utils.InternalError(err)
+	} else {
+		res = utils.SuccessResponse(nil)
+	}
+	c.JSON(res.Status, res.Body)
+}
