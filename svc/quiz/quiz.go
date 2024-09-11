@@ -7,9 +7,12 @@ import (
 	"slices"
 	"vocablo/customerrors"
 	"vocablo/ent"
+	"vocablo/ent/user"
 	"vocablo/ent/userword"
+	"vocablo/utils"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 type QuizSvc interface {
@@ -29,7 +32,8 @@ func (s *QuizSvcImpl) Create(ctx context.Context, form CreateForm) (*Quiz, error
 
 	//We collect double the number of questions to have more options to put in the quiz (avoiding the already learned)
 	userWords, err := s.DB.UserWord.Query().Limit(nQuestions * 2).
-		Where(userword.LearningProgressLT(100)).Order(sql.OrderByRand()).All(ctx)
+		Where(userword.And(userword.LearningProgressLT(100),
+			userword.HasUserWith(user.IDEQ(ctx.Value(utils.UserIdKey).(uuid.UUID))))).Order(sql.OrderByRand()).All(ctx)
 
 	//If the user has less than 4 words, we return an error (we need at least 4 words to create a quiz, 1 correct and 3 incorrect)
 	if len(userWords) < 4 {
@@ -47,7 +51,7 @@ func (s *QuizSvcImpl) Create(ctx context.Context, form CreateForm) (*Quiz, error
 		nDefinitions := len(userWord.Definitions)
 		correctWordDefinitionPosition := rand.Intn(nDefinitions)
 		correctOption := userWord.Definitions[correctWordDefinitionPosition]
-		//We calculate the position of the correct option (avoiding always the first position)
+		//We calculate the position of the correct option
 		correctOptionPosition := rand.Intn(4)
 		options[correctOptionPosition] = correctOption.Definition
 
